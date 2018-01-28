@@ -76,12 +76,12 @@ mod interpret {
     // Create public key -> stored on server
     // Save creditials --> server ---> decrpyts w/ public key ---->
     pub fn send_slice() {
-        let core = Core::new()
+        let mut core = Core::new()
             .expect("Couldn't instantiate");
         let client = Client::new(&core.handle());
 
-        let json = r#"{"library":"hyper"}"#;
-        let uri = "http://127.0.0.1/post".parse()
+        let json = r#"{"from": "addr_from", "to": "addr_to", "amount": "amount", "signature": "signature", "message": "message"}"#;
+        let uri = "http://192.168.1.85:8080/".parse()
             .expect("couldn't parse uri");
         let mut req = Request::new(Method::Post, uri);
         req.headers_mut().set(ContentType::json());
@@ -93,6 +93,8 @@ mod interpret {
 
             res.body().concat2()
         });
+
+        core.run(post);
 
         println!("slice sent")
     }
