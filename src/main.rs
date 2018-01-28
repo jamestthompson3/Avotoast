@@ -6,6 +6,7 @@ extern crate futures;
 extern crate hyper;
 extern crate tokio_core;
 extern crate byteorder;
+extern crate base64;
 
 
 use std::io;
@@ -47,6 +48,8 @@ mod interpret {
     use pem:: {Pem, encode, parse};
     use std::fs::File;
     use std::io::prelude::*;
+
+    use base64;
 
     use std::io::{self, Write};
     use futures::{Future, Stream};
@@ -136,7 +139,7 @@ mod interpret {
         println!("slice sent")
     }
 
-    pub fn create_message() -> Vec<u8> {
+    pub fn create_message() -> String {
         let now = SystemTime::now().duration_since(UNIX_EPOCH).expect("Time went backwards");
 
         let mut current_time = vec![];
@@ -151,7 +154,7 @@ mod interpret {
         let mut signer = Signer::new(MessageDigest::sha256(), &private_rsa).unwrap();
         signer.update(&current_time).unwrap();
         let signature = signer.sign_to_vec().unwrap();
-        return signature;
+        return base64::encode(&signature);
     }
 
     pub fn check_transactions() {
