@@ -146,9 +146,10 @@ mod interpret {
         file.read_to_string(&mut contents).expect("Fail to read private key");
 
         let private_key = parse(contents).unwrap().contents;
-        let pkey = PKey::from_rsa(private_key).unwrap();
+        // let private_rsa = Rsa::private_key_from_pem(&private_key).expect("Cannot parse private key");
+        let private_rsa = PKey::private_key_from_pem(&private_key).unwrap();
 
-        let mut signer = Signer::new(MessageDigest::sha256(), &pkey).unwrap();
+        let mut signer = Signer::new(MessageDigest::sha256(), &private_rsa).unwrap();
         signer.update(&current_time).unwrap();
         let signature = signer.sign_to_vec().unwrap();
     }
