@@ -36,7 +36,13 @@ fn main() {
 
 mod interpret {
     use openssl::rsa::Rsa;
-    use pem:: {Pem, encode};
+    use openssl::sign::{Signer, Verifier};
+    use openssl::rsa::Rsa;
+    use openssl::pkey::PKey;
+    use openssl::hash::MessageDigest;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    use pem:: {Pem, encode, parse};
     use std::fs::File;
     use std::io::prelude::*;
 
@@ -80,6 +86,8 @@ mod interpret {
             .expect("Couldn't instantiate");
         let client = Client::new(&core.handle());
 
+        let signature = create_message();
+
         let json = r#"{"from": "addr_from", "to": "addr_to", "amount": "amount", "signature": "signature", "message": "message"}"#;
         let uri = "http://192.168.1.85:8080/".parse()
             .expect("couldn't parse uri");
@@ -98,6 +106,25 @@ mod interpret {
 
         println!("slice sent")
     }
+
+    pub fn create_message( ) {
+        let now = SystemTime::now().duration_since(UNIX_EPOCH)
+            .expect("Time went backwards");
+
+        let mut file = File::open("AvoWalletPrivateKey").expect("Cannot open private key");
+        let mut contents = String::new();
+        file.read_to_string(&mut contents).expect("Fail to read private key");
+
+
+
+        let private_key = parse(private_pem).unwrap().contents;
+        let pkey = PKey::from_rsa(private_key).unwrap();
+
+        let mut signer = Signer::new(MessageDigest::sha256(), &pkey).unwrap();
+        signer.update(now).unwrap();
+        let signature = signer.sign_to_vec().unwrap();
+    }
+
     pub fn check_transactions() {
         println!("transaction sent")
     }
