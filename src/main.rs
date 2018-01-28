@@ -1,7 +1,8 @@
 extern crate openssl;
-extern pem;
+extern crate pem;
 
 use std::io;
+use std::fs::File;
 
 
 fn main() {
@@ -37,13 +38,13 @@ mod interpret {
     pub fn generate_key() {
         let rsa = Rsa::generate(4096).unwrap();
         let public_key = rsa.public_key_to_der().unwrap();
+        let private_key = rsa.private_key_to_der().unwrap();
         let private_pem = Pem {
             tag: String::from("RSA PRIVATE KEY"),
             contents: private_key,
         };
         let private = encode(&private_pem);
-        let mut file = File::create("avowalletPrivate")?;
-        file.write_all(b"{}", private_key);
+        let mut file = File::create("avoWallet").write_all(private);
 
     }
     // Create public key -> stored on server
