@@ -56,7 +56,12 @@ mod interpret {
             contents: private_key,
         };
         let private = encode(&private_pem);
-        let mut file = match File::create("AvoWalletPrivatKey") {
+        let public_pem = Pem {
+            tag: String::from("RSA PUBLIC KEY"),
+            contents: public_key,
+        };
+        let public = encode(&public_pem);
+        let mut file = match File::create("AvoWalletPrivateKey") {
             Err(why) => panic!("couldn't create"),
             Ok(file) => file,
         };
@@ -65,16 +70,19 @@ mod interpret {
                 panic!("Couldn't write")
             },
             Ok(_) => println!("Key generated"),
-        }
+        };
+        println!("Your Wallet Address is\n{}", public);
     }
     // Create public key -> stored on server
     // Save creditials --> server ---> decrpyts w/ public key ---->
     pub fn send_slice() {
-        let mut core = Core::new()?;
+        let core = Core::new()
+            .expect("Couldn't instantiate");
         let client = Client::new(&core.handle());
 
         let json = r#"{"library":"hyper"}"#;
-        let uri = "http://127.0.0.1/post".parse()?;
+        let uri = "http://127.0.0.1/post".parse()
+            .expect("couldn't parse uri");
         let mut req = Request::new(Method::Post, uri);
         req.headers_mut().set(ContentType::json());
         req.headers_mut().set(ContentLength(json.len() as u64));
