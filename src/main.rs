@@ -1,6 +1,7 @@
 extern crate openssl;
 extern crate pem;
-
+#[macro_use]
+extern crate serde_json;
 extern crate futures;
 extern crate hyper;
 extern crate tokio_core;
@@ -76,17 +77,39 @@ mod interpret {
     // Create public key -> stored on server
     // Save creditials --> server ---> decrpyts w/ public key ---->
     pub fn send_slice() {
+        println!("Enter your PUBLIC wallet key");
+        let mut from_address = String::new();
+        io::stdin().read_line(&mut from_address)
+            .expect("failed to read from wallet");
+
+
+        println!("Enter the wallet you want to send money to");
+        let mut to_address = String::new();
+        io::stdin().read_line(&mut to_address)
+            .expect("failed to read to wallet");
+
+        println!("How much money do you want to send?");
+        let mut amount_input = String::new();
+        io::stdin().read_line(&mut amount_input)
+            .expect("failed to read amount");
+        let amount: u32 = amount_input.trim().parse()
+                .expect("Not a valid Number");
+
         let mut core = Core::new()
             .expect("Couldn't instantiate");
         let client = Client::new(&core.handle());
 
-        let json = r#"{"from": "addr_from", "to": "addr_to", "amount": "amount", "signature": "signature", "message": "message"}"#;
+        let json = json!({
+                "from": from_address,
+                "to": to_address,
+                "amount": amount
+            });
         let uri = "http://192.168.1.85:8080/".parse()
             .expect("couldn't parse uri");
         let mut req = Request::new(Method::Post, uri);
         req.headers_mut().set(ContentType::json());
-        req.headers_mut().set(ContentLength(json.len() as u64));
-        req.set_body(json);
+        req.headers_mut().set(ContentLength(json.to_string().len() as u64));
+        req.set_body(json.to_string());
 
         let post = client.request(req).and_then(|res| {
             println!("POST: {}", res.status());
