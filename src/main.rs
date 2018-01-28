@@ -18,18 +18,23 @@ fn main() {
     let action: u8 = action.trim().parse()
         .expect("Not a valid Number");
 
-    interpret::actions(action)
+        match action {
+            1 => {interpret::generate_key();}
+            2 => {interpret::send_slice();}
+            3 => {interpret::check_transactions();}
+            _ => {println!("action is not valid");}
+        };
 
 }
 
 mod interpret {
-    pub fn actions(action: u8) {
-        match action {
-            1 => {println!("action is one");}
-            2 => {println!("action is two");}
-            3 => {println!("action is three");}
-            _ => {println!("action is not covered");}
-        };
-
+    pub fn generate_key() {
+        println!("key generated")
+    }
+    pub fn send_slice() {
+        println!("slice sent")
+    }
+    pub fn check_transactions() {
+        println!("transaction sent")
     }
 }
