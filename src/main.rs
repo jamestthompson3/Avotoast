@@ -114,7 +114,8 @@ mod interpret {
         let json = json!({
                 "from": from_address,
                 "to": to_address,
-                "amount": amount
+                "amount": amount,
+                "message": signature
             });
 
         let uri = "http://192.168.1.85:8080/".parse()
@@ -135,23 +136,22 @@ mod interpret {
         println!("slice sent")
     }
 
-    pub fn create_message( ) {
+    pub fn create_message() -> Vec<u8> {
         let now = SystemTime::now().duration_since(UNIX_EPOCH).expect("Time went backwards");
 
         let mut current_time = vec![];
         current_time.write_u16::<BigEndian>(now.as_secs() as u16).unwrap();
 
         let mut file = File::open("AvoWalletPrivateKey").expect("Cannot open private key");
-        let mut contents = String::new();
-        file.read_to_string(&mut contents).expect("Fail to read private key");
-
-        let private_key = parse(contents).unwrap().contents;
-        // let private_rsa = Rsa::private_key_from_pem(&private_key).expect("Cannot parse private key");
-        let private_rsa = PKey::private_key_from_pem(&private_key).unwrap();
+        let mut contents = vec![];
+        file.read_to_end(&mut contents).expect("Fail to read private key");
+        // let private_key = parse(contents).unwrap().contents;
+        let private_rsa = PKey::private_key_from_pem(&contents).unwrap();
 
         let mut signer = Signer::new(MessageDigest::sha256(), &private_rsa).unwrap();
         signer.update(&current_time).unwrap();
         let signature = signer.sign_to_vec().unwrap();
+        return signature;
     }
 
     pub fn check_transactions() {
