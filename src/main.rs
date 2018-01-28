@@ -45,15 +45,15 @@ mod interpret {
         };
         let private = encode(&private_pem);
         let mut file = match File::create("AvoWalletPrivatKey") {
-        Err(why) => panic!("couldn't create"),
-        Ok(file) => file,
-    };
-    match file.write_all(private.as_bytes()) {
-        Err(why) => {
-            panic!("Couldn't write")
-        },
-        Ok(_) => println!("Key generated"),
-    }
+            Err(why) => panic!("couldn't create"),
+            Ok(file) => file,
+        };
+        match file.write_all(private.as_bytes()) {
+            Err(why) => {
+                panic!("Couldn't write")
+            },
+            Ok(_) => println!("Key generated"),
+        }
 
     }
     // Create public key -> stored on server
