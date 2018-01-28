@@ -5,6 +5,8 @@ extern crate serde_json;
 extern crate futures;
 extern crate hyper;
 extern crate tokio_core;
+extern crate byteorder;
+
 
 use std::io;
 use std::fs::File;
@@ -38,7 +40,6 @@ fn main() {
 mod interpret {
     use openssl::rsa::Rsa;
     use openssl::sign::{Signer, Verifier};
-    use openssl::rsa::Rsa;
     use openssl::pkey::PKey;
     use openssl::hash::MessageDigest;
     use std::time::{SystemTime, UNIX_EPOCH};
@@ -53,6 +54,8 @@ mod interpret {
     use tokio_core::reactor::Core;
     use hyper::{Method, Request};
     use hyper::header::{ContentLength, ContentType};
+    use std::io::Cursor;
+    use byteorder::{BigEndian, WriteBytesExt};
 
     pub fn generate_key() {
         let rsa = Rsa::generate(4096).unwrap();
@@ -113,7 +116,7 @@ mod interpret {
                 "to": to_address,
                 "amount": amount
             });
-        
+
         let uri = "http://192.168.1.85:8080/".parse()
             .expect("couldn't parse uri");
         let mut req = Request::new(Method::Post, uri);
@@ -133,20 +136,20 @@ mod interpret {
     }
 
     pub fn create_message( ) {
-        let now = SystemTime::now().duration_since(UNIX_EPOCH)
-            .expect("Time went backwards");
+        let now = SystemTime::now().duration_since(UNIX_EPOCH).expect("Time went backwards");
+
+        let mut current_time = vec![];
+        current_time.write_u16::<BigEndian>(now.as_secs() as u16).unwrap();
 
         let mut file = File::open("AvoWalletPrivateKey").expect("Cannot open private key");
         let mut contents = String::new();
         file.read_to_string(&mut contents).expect("Fail to read private key");
 
-
-
-        let private_key = parse(private_pem).unwrap().contents;
+        let private_key = parse(contents).unwrap().contents;
         let pkey = PKey::from_rsa(private_key).unwrap();
 
         let mut signer = Signer::new(MessageDigest::sha256(), &pkey).unwrap();
-        signer.update(now).unwrap();
+        signer.update(&current_time).unwrap();
         let signature = signer.sign_to_vec().unwrap();
     }
 
