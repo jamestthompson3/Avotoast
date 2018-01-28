@@ -1,6 +1,6 @@
-extern crate crypto;
+extern crate openssl;
+extern pem;
 
-use crypto::sha2::Sha256;
 use std::io;
 
 
@@ -27,10 +27,27 @@ fn main() {
 
 }
 
+// TODO
+
 mod interpret {
+    use openssl::rsa::Rsa;
+    use pem:: {Pem, encode};
+    use std::fs::File;
+    use std::io::prelude::*;
     pub fn generate_key() {
-        println!("key generated")
+        let rsa = Rsa::generate(4096).unwrap();
+        let public_key = rsa.public_key_to_der().unwrap();
+        let private_pem = Pem {
+            tag: String::from("RSA PRIVATE KEY"),
+            contents: private_key,
+        };
+        let private = encode(&private_pem);
+        let mut file = File::create("avowalletPrivate")?;
+        file.write_all(b"{}", private_key);
+
     }
+    // Create public key -> stored on server
+    // Save creditials --> server ---> decrpyts w/ public key ---->
     pub fn send_slice() {
         println!("slice sent")
     }

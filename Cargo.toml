@@ -4,4 +4,6 @@ version = "0.1.0"
 authors = ["jamestthompson3 <jamestthompson3@gmail.com>"]
 
 [dependencies]
-rust-crypto = "0.2.36"
+rpassword = "0.0.4"
+pem = "0.4"
+openssl = "0.10.2"
