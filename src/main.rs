@@ -1,6 +1,10 @@
 extern crate openssl;
 extern crate pem;
 
+extern crate futures;
+extern crate hyper;
+extern crate tokio_core;
+
 use std::io;
 use std::fs::File;
 
@@ -35,6 +39,14 @@ mod interpret {
     use pem:: {Pem, encode};
     use std::fs::File;
     use std::io::prelude::*;
+
+    use std::io::{self, Write};
+    use futures::{Future, Stream};
+    use hyper::Client;
+    use tokio_core::reactor::Core;
+    use hyper::{Method, Request};
+    use hyper::header::{ContentLength, ContentType};
+
     pub fn generate_key() {
         let rsa = Rsa::generate(4096).unwrap();
         let public_key = rsa.public_key_to_der().unwrap();
@@ -54,11 +66,26 @@ mod interpret {
             },
             Ok(_) => println!("Key generated"),
         }
-
     }
     // Create public key -> stored on server
     // Save creditials --> server ---> decrpyts w/ public key ---->
     pub fn send_slice() {
+        let mut core = Core::new()?;
+        let client = Client::new(&core.handle());
+
+        let json = r#"{"library":"hyper"}"#;
+        let uri = "http://127.0.0.1/post".parse()?;
+        let mut req = Request::new(Method::Post, uri);
+        req.headers_mut().set(ContentType::json());
+        req.headers_mut().set(ContentLength(json.len() as u64));
+        req.set_body(json);
+
+        let post = client.request(req).and_then(|res| {
+            println!("POST: {}", res.status());
+
+            res.body().concat2()
+        });
+
         println!("slice sent")
     }
     pub fn check_transactions() {
