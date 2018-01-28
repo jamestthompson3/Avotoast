@@ -1,3 +1,6 @@
+extern crate crypto;
+
+use crypto::sha2::Sha256;
 use std::io;
 
 
@@ -12,18 +15,21 @@ fn main() {
     io::stdin().read_line(&mut action)
         .expect("failed to read option");
 
-    let action: u8 = action.trim.parse()
+    let action: u8 = action.trim().parse()
         .expect("Not a valid Number");
-}
 
-enum ActionType {
-    1,
-    2,
-    3
+    interpret::actions(action)
+
 }
 
 mod interpret {
-    fn actions(action: ActionType) {
+    pub fn actions(action: u8) {
+        match action {
+            1 => {println!("action is one");}
+            2 => {println!("action is two");}
+            3 => {println!("action is three");}
+            _ => {println!("action is not covered");}
+        };
 
     }
 }
