@@ -10,9 +10,6 @@ extern crate base64;
 
 
 use std::io;
-use std::fs::File;
-
-
 fn main() {
     println!("******************************************************\n");
     println!("Welcome to Avotoast ! The cryptocurrency of your dreams");
@@ -40,12 +37,12 @@ fn main() {
 
 mod interpret {
     use openssl::rsa::Rsa;
-    use openssl::sign::{Signer, Verifier};
+    use openssl::sign::{Signer};
     use openssl::pkey::PKey;
     use openssl::hash::MessageDigest;
     use std::time::{SystemTime, UNIX_EPOCH};
 
-    use pem:: {Pem, encode, parse};
+    use pem:: {Pem, encode};
     use std::fs::File;
     use std::io::prelude::*;
 
@@ -57,7 +54,6 @@ mod interpret {
     use tokio_core::reactor::Core;
     use hyper::{Method, Request};
     use hyper::header::{ContentLength, ContentType};
-    use std::io::Cursor;
     use byteorder::{BigEndian, WriteBytesExt};
 
     pub fn generate_key() {
@@ -75,12 +71,12 @@ mod interpret {
         };
         let public = encode(&public_pem);
         let mut file = match File::create("AvoWalletPrivateKey") {
-            Err(why) => panic!("couldn't create"),
+            Err(why) => panic!("couldn't create, {}", why),
             Ok(file) => file,
         };
         match file.write_all(private.as_bytes()) {
             Err(why) => {
-                panic!("Couldn't write")
+                panic!("Couldn't write, {}", why)
             },
             Ok(_) => println!("Key generated"),
         };
@@ -134,7 +130,7 @@ mod interpret {
             res.body().concat2()
         });
 
-        core.run(post);
+        core.run(post).expect("Could not post message");
 
         println!("slice sent")
     }
